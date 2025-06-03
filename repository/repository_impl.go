@@ -44,3 +44,23 @@ func (repo *RepositoryImpl) AddProduct(ctx context.Context, tx *sql.Tx, entity *
 	return response, nil
 
 }
+
+func (repo *RepositoryImpl) GetProducts(ctx context.Context, tx *sql.Tx) ([]*domain.Domain, error) {
+	query := "select * from products"
+	rows, err := tx.QueryContext(ctx, query)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	var products []*domain.Domain
+	for rows.Next() {
+		var product domain.Domain
+		rows.Scan(&product.Id, &product.Name, &product.Description, &product.Stock, &product.Price, &product.CreatedAt)
+		products = append(products, &product)
+	}
+
+	defer rows.Close()
+
+	return products, nil
+}

@@ -22,6 +22,7 @@ func main() {
 	defer cleanup()
 
 	app.Post("/v1/products", ctrl.AddProduct)
+	app.Get("/v1/products", ctrl.GetProducts)
 
 	app.Listen(":8080")
 

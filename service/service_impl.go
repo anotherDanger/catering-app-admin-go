@@ -54,3 +54,27 @@ func (svc *ServiceImpl) AddProduct(ctx context.Context, request *web.Request) (*
 	return data, nil
 
 }
+
+func (svc *ServiceImpl) GetProducts(ctx context.Context) ([]*domain.Domain, error) {
+	tx, err := svc.db.Begin()
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	products, err := svc.repo.GetProducts(ctx, tx)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+		}
+	}()
+
+	return products, nil
+}
