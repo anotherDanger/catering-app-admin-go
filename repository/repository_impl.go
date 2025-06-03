@@ -54,13 +54,50 @@ func (repo *RepositoryImpl) GetProducts(ctx context.Context, tx *sql.Tx) ([]*dom
 	}
 
 	var products []*domain.Domain
+	defer rows.Close()
 	for rows.Next() {
 		var product domain.Domain
-		rows.Scan(&product.Id, &product.Name, &product.Description, &product.Stock, &product.Price, &product.CreatedAt)
+		err := rows.Scan(&product.Id, &product.Name, &product.Description, &product.Stock, &product.Price, &product.CreatedAt, &product.ModifiedAt)
+		if err != nil {
+			fmt.Println(err)
+		}
 		products = append(products, &product)
 	}
 
-	defer rows.Close()
-
 	return products, nil
+}
+
+func (repo *RepositoryImpl) DeleteProduct(ctx context.Context, tx *sql.Tx, id string) error {
+	query := "delete from products where id = ?"
+	result, err := tx.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	rowAff, _ := result.RowsAffected()
+	if rowAff == 0 {
+		return fmt.Errorf("no product found with id %s", id)
+	}
+
+	return nil
+}
+
+func (repo *RepositoryImpl) UpdateProduct(ctx context.Context, tx *sql.Tx, entity *domain.Domain, id string) (*domain.Domain, error) {
+	query := "update products set name = ?, description = ?, stock = ?, price = ?, modified_at = ? where id = ?"
+	result, err := tx.ExecContext(ctx, query, entity.Name, entity.Description, entity.Stock, entity.Price, entity.ModifiedAt, id)
+	if err != nil {
+		return nil, err
+	}
+
+	rowAff, _ := result.RowsAffected()
+	if rowAff == 0 {
+		return nil, fmt.Errorf("Error", err)
+	}
+
+	var product domain.Domain
+
+	row := tx.QueryRow("select * from products where id = ?", id)
+	row.Scan(&product.Id, &product.Name, &product.Description, &product.Stock, &product.Price, &product.CreatedAt, &product.ModifiedAt)
+
+	return &product, nil
 }

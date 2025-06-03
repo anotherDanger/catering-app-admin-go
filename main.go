@@ -23,6 +23,8 @@ func main() {
 
 	app.Post("/v1/products", ctrl.AddProduct)
 	app.Get("/v1/products", ctrl.GetProducts)
+	app.Delete("/v1/products/:id", ctrl.DeleteProduct)
+	app.Put("/v1/products/:id", ctrl.UpdateProduct)
 
 	app.Listen(":8080")
 

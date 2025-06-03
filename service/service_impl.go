@@ -35,7 +35,7 @@ func (svc *ServiceImpl) AddProduct(ctx context.Context, request *web.Request) (*
 	date := time.Now()
 
 	request.Id = id
-	request.CreatedAt = date
+	request.CreatedAt = &date
 
 	data, err := svc.repo.AddProduct(ctx, tx, (*domain.Domain)(request))
 	if err != nil {
@@ -77,4 +77,54 @@ func (svc *ServiceImpl) GetProducts(ctx context.Context) ([]*domain.Domain, erro
 	}()
 
 	return products, nil
+}
+
+func (svc *ServiceImpl) DeleteProduct(ctx context.Context, id string) error {
+	tx, err := svc.db.Begin()
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	err = svc.repo.DeleteProduct(ctx, tx, id)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+		}
+	}()
+
+	return nil
+}
+
+func (svc *ServiceImpl) UpdateProduct(ctx context.Context, request *domain.Domain, id string) (*domain.Domain, error) {
+	tx, err := svc.db.Begin()
+	if err != nil {
+		return nil, err
+	}
+
+	date := time.Now()
+	request.ModifiedAt = &date
+
+	data, err := svc.repo.UpdateProduct(ctx, tx, request, id)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+		}
+	}()
+
+	return data, nil
 }

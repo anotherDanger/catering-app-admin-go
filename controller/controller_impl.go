@@ -26,7 +26,6 @@ func (ctrl *ControllerImpl) AddProduct(c *fiber.Ctx) error {
 	reqBody.Name = c.FormValue("name")
 	reqBody.Description = c.FormValue("description")
 
-	// konversi string ke int
 	price, err := strconv.Atoi(c.FormValue("price"))
 	if err != nil {
 		return web.ErrorResponse(c, 400, "Invalid price", err.Error())
@@ -39,12 +38,10 @@ func (ctrl *ControllerImpl) AddProduct(c *fiber.Ctx) error {
 	}
 	reqBody.Stock = stock
 
-	// validasi
 	if err := helper.ValidateStruct(reqBody); err != nil {
 		return web.ErrorResponse(c, 400, "Validation failed", err.Error())
 	}
 
-	// lanjut ke service
 	result, err := ctrl.svc.AddProduct(c.Context(), &reqBody)
 	if err != nil {
 		return web.ErrorResponse(c, 400, "Service error", err.Error())
@@ -60,4 +57,48 @@ func (ctrl *ControllerImpl) GetProducts(c *fiber.Ctx) error {
 	}
 
 	return web.SuccessResponse[[]*domain.Domain](c, 200, "OK", products)
+}
+
+func (ctrl *ControllerImpl) DeleteProduct(c *fiber.Ctx) error {
+	id := c.Params("id")
+	err := ctrl.svc.DeleteProduct(c.Context(), id)
+	if err != nil {
+		return web.ErrorResponse(c, 400, "Error", err.Error())
+	}
+
+	return c.SendStatus(204)
+
+}
+
+func (ctrl *ControllerImpl) UpdateProduct(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	name := c.FormValue("name")
+	description := c.FormValue("description")
+	stockStr := c.FormValue("stock")
+	priceStr := c.FormValue("price")
+
+	stock, err := strconv.Atoi(stockStr)
+	if err != nil {
+		return web.ErrorResponse(c, 400, "Invalid stock", err.Error())
+	}
+
+	price, err := strconv.Atoi(priceStr)
+	if err != nil {
+		return web.ErrorResponse(c, 400, "Invalid price", err.Error())
+	}
+
+	reqBody := &domain.Domain{
+		Name:        name,
+		Description: description,
+		Stock:       stock,
+		Price:       price,
+	}
+
+	response, err := ctrl.svc.UpdateProduct(c.Context(), reqBody, id)
+	if err != nil {
+		return web.ErrorResponse(c, 400, "Error", err.Error())
+	}
+
+	return web.SuccessResponse(c, 200, "OK", response)
 }

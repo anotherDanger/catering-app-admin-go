@@ -21,7 +21,7 @@ func NewDb() (*sql.DB, func(), error) {
 	port := os.Getenv("DB_PORT")
 	name := os.Getenv("DB_NAME")
 
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", user, pass, host, port, name)
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", user, pass, host, port, name)
 
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
