@@ -1,9 +1,13 @@
 package web
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type Request struct {
-	Id          string    `json:"id" validate:"required,uuid"`
+	Id          uuid.UUID `json:"id" validate:"required,uuid"`
 	Name        string    `json:"name" validate:"alpha,required,string,min=5,max=50"`
 	Description string    `json:"description" validate:"alphanum"`
 	Stock       int       `json:"stock" validate:"required,number"`

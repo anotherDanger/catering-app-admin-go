@@ -1,0 +1,56 @@
+package service
+
+import (
+	"catering-admin-go/domain"
+	"catering-admin-go/helper"
+	"catering-admin-go/repository"
+	"catering-admin-go/web"
+	"context"
+	"database/sql"
+	"time"
+
+	"github.com/google/uuid"
+)
+
+type ServiceImpl struct {
+	repo repository.Repository
+	db   *sql.DB
+}
+
+func NewServiceImpl(repo repository.Repository, db *sql.DB) Service {
+	return &ServiceImpl{
+		repo: repo,
+		db:   db,
+	}
+}
+
+func (svc *ServiceImpl) AddProduct(ctx context.Context, request *web.Request) (*domain.Domain, error) {
+	tx, err := svc.db.Begin()
+	if err != nil {
+		return nil, err
+	}
+
+	id := uuid.New()
+	date := time.Now()
+
+	request.Id = id
+	request.CreatedAt = date
+
+	helper.ValidateStruct(request)
+
+	data, err := svc.repo.AddProduct(ctx, tx, (*domain.Domain)(request))
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+		}
+	}()
+
+	return data, nil
+
+}
