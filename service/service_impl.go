@@ -2,11 +2,11 @@ package service
 
 import (
 	"catering-admin-go/domain"
-	"catering-admin-go/helper"
 	"catering-admin-go/repository"
 	"catering-admin-go/web"
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -27,6 +27,7 @@ func NewServiceImpl(repo repository.Repository, db *sql.DB) Service {
 func (svc *ServiceImpl) AddProduct(ctx context.Context, request *web.Request) (*domain.Domain, error) {
 	tx, err := svc.db.Begin()
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 
@@ -36,10 +37,9 @@ func (svc *ServiceImpl) AddProduct(ctx context.Context, request *web.Request) (*
 	request.Id = id
 	request.CreatedAt = date
 
-	helper.ValidateStruct(request)
-
 	data, err := svc.repo.AddProduct(ctx, tx, (*domain.Domain)(request))
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 

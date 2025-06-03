@@ -2,9 +2,9 @@ package controller
 
 import (
 	"catering-admin-go/domain"
+	"catering-admin-go/helper"
 	"catering-admin-go/service"
 	"catering-admin-go/web"
-	"net/http"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -20,27 +20,23 @@ func NewControllerImpl(svc service.Service) Controller {
 }
 
 func (ctrl *ControllerImpl) AddProduct(c *fiber.Ctx) error {
+
 	var reqBody *web.Request
 	err := c.BodyParser(&reqBody)
 	if err != nil {
-		return err
+		return web.ErrorResponse(c, 400, "Bad Request", err.Error())
+	}
+	err = helper.ValidateStruct(reqBody)
+	if err != nil {
+		return web.ErrorResponse(c, 400, "Bad Request", err.Error())
 	}
 
 	result, err := ctrl.svc.AddProduct(c.Context(), reqBody)
 	if err != nil {
-		c.JSON(&web.Response[*domain.Domain]{
-			Code:   http.StatusBadRequest,
-			Status: http.StatusText(400),
-			Data:   nil,
-		})
-		c.Status(400)
+		return web.ErrorResponse(c, 400, "Bad Request", err.Error())
 	}
 
-	c.JSON(&web.Response[*domain.Domain]{
-		Code:   http.StatusCreated,
-		Status: http.StatusText(http.StatusCreated),
-		Data:   result,
-	})
-	c.Status(201)
+	web.SuccessResponse[*domain.Domain](c, 201, "OK", result)
+
 	return nil
 }

@@ -7,10 +7,10 @@ import (
 )
 
 type Request struct {
-	Id          uuid.UUID `json:"id" validate:"required,uuid"`
-	Name        string    `json:"name" validate:"alpha,required,string,min=5,max=50"`
-	Description string    `json:"description" validate:"alphanum"`
+	Id          uuid.UUID `json:"id"`
+	Name        string    `json:"name" validate:"alpha,required,min=5,max=50"`
+	Description string    `json:"description" validate:"omitempty,alphanum"`
 	Stock       int       `json:"stock" validate:"required,number"`
 	Price       int       `json:"price" validate:"required,number"`
-	CreatedAt   time.Time `json:"created_at" validate:"required"`
+	CreatedAt   time.Time `json:"created_at"`
 }
