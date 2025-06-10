@@ -4,6 +4,7 @@ import (
 	"catering-admin-go/domain"
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 )
 
@@ -57,10 +58,17 @@ func (repo *RepositoryImpl) GetProducts(ctx context.Context, tx *sql.Tx) ([]*dom
 	defer rows.Close()
 	for rows.Next() {
 		var product domain.Domain
-		err := rows.Scan(&product.Id, &product.Name, &product.Description, &product.Stock, &product.Price, &product.CreatedAt, &product.ModifiedAt)
+		var description sql.NullString
+		err := rows.Scan(&product.Id, &product.Name, &description, &product.Stock, &product.Price, &product.CreatedAt, &product.ModifiedAt)
 		if err != nil {
 			fmt.Println(err)
+			return nil, err
 		}
+
+		if description.Valid {
+			product.Description = description.String
+		}
+
 		products = append(products, &product)
 	}
 
@@ -84,20 +92,28 @@ func (repo *RepositoryImpl) DeleteProduct(ctx context.Context, tx *sql.Tx, id st
 
 func (repo *RepositoryImpl) UpdateProduct(ctx context.Context, tx *sql.Tx, entity *domain.Domain, id string) (*domain.Domain, error) {
 	query := "update products set name = ?, description = ?, stock = ?, price = ?, modified_at = ? where id = ?"
+
 	result, err := tx.ExecContext(ctx, query, entity.Name, entity.Description, entity.Stock, entity.Price, entity.ModifiedAt, id)
 	if err != nil {
 		return nil, err
 	}
 
-	rowAff, _ := result.RowsAffected()
+	rowAff, err := result.RowsAffected()
+	if err != nil {
+		return nil, err
+	}
+
 	if rowAff == 0 {
-		return nil, fmt.Errorf("Error", err)
+		return nil, errors.New("no rows updated")
 	}
 
 	var product domain.Domain
 
-	row := tx.QueryRow("select * from products where id = ?", id)
-	row.Scan(&product.Id, &product.Name, &product.Description, &product.Stock, &product.Price, &product.CreatedAt, &product.ModifiedAt)
+	row := tx.QueryRowContext(ctx, "select id, name, description, stock, price, created_at, modified_at from products where id = ?", id)
+	err = row.Scan(&product.Id, &product.Name, &product.Description, &product.Stock, &product.Price, &product.CreatedAt, &product.ModifiedAt)
+	if err != nil {
+		return nil, err
+	}
 
 	return &product, nil
 }

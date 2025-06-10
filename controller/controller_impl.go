@@ -88,7 +88,7 @@ func (ctrl *ControllerImpl) UpdateProduct(c *fiber.Ctx) error {
 		return web.ErrorResponse(c, 400, "Invalid price", err.Error())
 	}
 
-	reqBody := &domain.Domain{
+	reqBody := &web.Request{
 		Name:        name,
 		Description: description,
 		Stock:       stock,
