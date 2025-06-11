@@ -94,6 +94,36 @@ func (_m *Repository) GetProducts(ctx context.Context, tx *sql.Tx) ([]*domain.Do
 	return r0, r1
 }
 
+// Login provides a mock function with given fields: ctx, tx, entity
+func (_m *Repository) Login(ctx context.Context, tx *sql.Tx, entity *domain.Admin) (*domain.Admin, error) {
+	ret := _m.Called(ctx, tx, entity)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Login")
+	}
+
+	var r0 *domain.Admin
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *sql.Tx, *domain.Admin) (*domain.Admin, error)); ok {
+		return rf(ctx, tx, entity)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *sql.Tx, *domain.Admin) *domain.Admin); ok {
+		r0 = rf(ctx, tx, entity)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*domain.Admin)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *sql.Tx, *domain.Admin) error); ok {
+		r1 = rf(ctx, tx, entity)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // UpdateProduct provides a mock function with given fields: ctx, tx, entity, id
 func (_m *Repository) UpdateProduct(ctx context.Context, tx *sql.Tx, entity *domain.Domain, id string) (*domain.Domain, error) {
 	ret := _m.Called(ctx, tx, entity, id)
