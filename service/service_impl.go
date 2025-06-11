@@ -1,12 +1,16 @@
 package service
 
 import (
+	"bytes"
 	"catering-admin-go/domain"
 	"catering-admin-go/repository"
 	"catering-admin-go/web"
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"time"
 
 	"github.com/google/uuid"
@@ -22,6 +26,52 @@ func NewServiceImpl(repo repository.Repository, db *sql.DB) Service {
 		repo: repo,
 		db:   db,
 	}
+}
+
+func (svc *ServiceImpl) Login(ctx context.Context, request *domain.Admin) (*web.AdminResponse, error) {
+	tx, err := svc.db.Begin()
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+		}
+	}()
+
+	result, err := svc.repo.Login(ctx, tx, request)
+	if err != nil {
+		return nil, err
+	}
+
+	byteBody, err := json.Marshal(result)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader := bytes.NewBuffer(byteBody)
+
+	byteResult, err := http.Post("http://localhost:8081/v1/auth", "application/json", bodyReader)
+	if err != nil {
+		return nil, err
+	}
+
+	byteBodyResult, err := io.ReadAll(byteResult.Body)
+	if err != nil {
+		return nil, err
+	}
+	var token web.Token
+
+	json.Unmarshal(byteBodyResult, &token)
+
+	response := &web.AdminResponse{
+		Username:    result.Username,
+		AccessToken: token.AccessToken,
+	}
+
+	return response, nil
 }
 
 func (svc *ServiceImpl) AddProduct(ctx context.Context, request *web.Request) (data *domain.Domain, err error) {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"catering-admin-go/controller"
+	"catering-admin-go/middleware"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -11,10 +12,14 @@ func NewServer(handler controller.Controller) *fiber.App {
 	app := fiber.New()
 	app.Use(cors.New())
 
-	app.Post("/v1/products", handler.AddProduct)
-	app.Get("/v1/products", handler.GetProducts)
-	app.Delete("/v1/products/:id", handler.DeleteProduct)
-	app.Put("/v1/products/:id", handler.UpdateProduct)
+	app.Post("/v1/login", handler.Login)
+
+	protectedRoute := app.Group("/api")
+	protectedRoute.Use(middleware.MyMiddleware)
+	protectedRoute.Post("/v1/products", handler.AddProduct)
+	protectedRoute.Get("/v1/products", handler.GetProducts)
+	protectedRoute.Delete("/v1/products/:id", handler.DeleteProduct)
+	protectedRoute.Put("/v1/products/:id", handler.UpdateProduct)
 
 	return app
 }

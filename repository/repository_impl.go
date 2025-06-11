@@ -14,6 +14,17 @@ func NewRepositoryImpl() Repository {
 	return &RepositoryImpl{}
 }
 
+func (repo *RepositoryImpl) Login(ctx context.Context, tx *sql.Tx, entity *domain.Admin) (*domain.Admin, error) {
+	query := "select id, username, password from admin where username = ?"
+	result := tx.QueryRowContext(ctx, query, entity.Username)
+
+	var response domain.Admin
+	result.Scan(&response.Id, &response.Username, &response.Password)
+
+	return &response, nil
+
+}
+
 func (repo *RepositoryImpl) AddProduct(ctx context.Context, tx *sql.Tx, entity *domain.Domain) (*domain.Domain, error) {
 	query := "insert into products(id, name, description, stock, price, created_at) values(?, ?, ?, ?, ?, ?)"
 	result, err := tx.ExecContext(ctx, query, entity.Id, entity.Name, entity.Description, entity.Stock, entity.Price, entity.CreatedAt)

@@ -20,6 +20,22 @@ func NewControllerImpl(svc service.Service) Controller {
 	}
 }
 
+func (ctrl *ControllerImpl) Login(c *fiber.Ctx) error {
+	var reqBody domain.Admin
+
+	reqBody.Username = c.FormValue("username")
+	reqBody.Password = c.FormValue("password")
+
+	result, err := ctrl.svc.Login(c.Context(), &reqBody)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	return c.Status(200).JSON(result)
+}
+
 func (ctrl *ControllerImpl) AddProduct(c *fiber.Ctx) error {
 	var reqBody web.Request
 
