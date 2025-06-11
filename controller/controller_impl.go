@@ -51,6 +51,8 @@ func (ctrl *ControllerImpl) AddProduct(c *fiber.Ctx) error {
 		logger.GetLogger("controller-log").Log("controller", "error", err.Error())
 		return web.ErrorResponse(c, 400, "Service error", err.Error())
 	}
+
+	logger.GetLogger("controller-log").Log("controller", "error", "Product added successfully")
 	return web.SuccessResponse[*domain.Domain](c, 201, "Created", result)
 }
 
