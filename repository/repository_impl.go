@@ -2,10 +2,10 @@ package repository
 
 import (
 	"catering-admin-go/domain"
+	"catering-admin-go/logger"
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 )
 
 type RepositoryImpl struct{}
@@ -29,18 +29,18 @@ func (repo *RepositoryImpl) AddProduct(ctx context.Context, tx *sql.Tx, entity *
 	query := "insert into products(id, name, description, stock, price, created_at) values(?, ?, ?, ?, ?, ?)"
 	result, err := tx.ExecContext(ctx, query, entity.Id, entity.Name, entity.Description, entity.Stock, entity.Price, entity.CreatedAt)
 	if err != nil {
-		fmt.Println(err)
+		logger.GetLogger("repository-log").Log("add product", "error", err.Error())
 		return nil, err
 	}
 
 	rowAff, err := result.RowsAffected()
 	if err != nil {
-		fmt.Println(err)
+		logger.GetLogger("repository-log").Log("add product", "error", err.Error())
 		return nil, err
 	}
 
 	if rowAff == 0 {
-		fmt.Println(err)
+		logger.GetLogger("repository-log").Log("add product", "error", err.Error())
 		return nil, err
 	}
 
@@ -61,7 +61,7 @@ func (repo *RepositoryImpl) GetProducts(ctx context.Context, tx *sql.Tx) ([]*dom
 	query := "select * from products"
 	rows, err := tx.QueryContext(ctx, query)
 	if err != nil {
-		fmt.Println(err)
+		logger.GetLogger("repository-log").Log("get product", "error", err.Error())
 		return nil, err
 	}
 
@@ -72,7 +72,7 @@ func (repo *RepositoryImpl) GetProducts(ctx context.Context, tx *sql.Tx) ([]*dom
 		var description sql.NullString
 		err := rows.Scan(&product.Id, &product.Name, &description, &product.Stock, &product.Price, &product.CreatedAt, &product.ModifiedAt)
 		if err != nil {
-			fmt.Println(err)
+			logger.GetLogger("repository-log").Log("get product", "error", err.Error())
 			return nil, err
 		}
 
@@ -90,12 +90,14 @@ func (repo *RepositoryImpl) DeleteProduct(ctx context.Context, tx *sql.Tx, id st
 	query := "delete from products where id = ?"
 	result, err := tx.ExecContext(ctx, query, id)
 	if err != nil {
+		logger.GetLogger("repository-log").Log("delete product", "error", err.Error())
 		return err
 	}
 
-	rowAff, _ := result.RowsAffected()
-	if rowAff == 0 {
-		return fmt.Errorf("no product found with id %s", id)
+	rowAff, err := result.RowsAffected()
+	if rowAff == 0 || err != nil {
+		logger.GetLogger("repository-log").Log("delete product", "error", err.Error())
+		return err
 	}
 
 	return nil
@@ -106,11 +108,13 @@ func (repo *RepositoryImpl) UpdateProduct(ctx context.Context, tx *sql.Tx, entit
 
 	result, err := tx.ExecContext(ctx, query, entity.Name, entity.Description, entity.Stock, entity.Price, entity.ModifiedAt, id)
 	if err != nil {
+		logger.GetLogger("repository-log").Log("update product", "error", err.Error())
 		return nil, err
 	}
 
 	rowAff, err := result.RowsAffected()
 	if err != nil {
+		logger.GetLogger("repository-log").Log("update product", "error", err.Error())
 		return nil, err
 	}
 
@@ -123,6 +127,7 @@ func (repo *RepositoryImpl) UpdateProduct(ctx context.Context, tx *sql.Tx, entit
 	row := tx.QueryRowContext(ctx, "select id, name, description, stock, price, created_at, modified_at from products where id = ?", id)
 	err = row.Scan(&product.Id, &product.Name, &product.Description, &product.Stock, &product.Price, &product.CreatedAt, &product.ModifiedAt)
 	if err != nil {
+		logger.GetLogger("repository-log").Log("update product", "error", err.Error())
 		return nil, err
 	}
 

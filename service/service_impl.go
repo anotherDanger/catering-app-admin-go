@@ -3,14 +3,16 @@ package service
 import (
 	"bytes"
 	"catering-admin-go/domain"
+	"catering-admin-go/logger"
 	"catering-admin-go/repository"
 	"catering-admin-go/web"
 	"context"
 	"database/sql"
+
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
+
 	"time"
 
 	"github.com/google/uuid"
@@ -77,7 +79,7 @@ func (svc *ServiceImpl) Login(ctx context.Context, request *domain.Admin) (*web.
 func (svc *ServiceImpl) AddProduct(ctx context.Context, request *web.Request) (data *domain.Domain, err error) {
 	tx, err := svc.db.Begin()
 	if err != nil {
-		fmt.Println(err)
+		logger.GetLogger("service-log").Log("add product", "error", err.Error())
 		return nil, err
 	}
 
@@ -89,6 +91,7 @@ func (svc *ServiceImpl) AddProduct(ctx context.Context, request *web.Request) (d
 	defer func() {
 		if err != nil {
 			tx.Rollback()
+			logger.GetLogger("service-log").Log("add product", "error", err.Error())
 		} else {
 			tx.Commit()
 		}
@@ -96,7 +99,7 @@ func (svc *ServiceImpl) AddProduct(ctx context.Context, request *web.Request) (d
 
 	data, err = svc.repo.AddProduct(ctx, tx, (*domain.Domain)(request))
 	if err != nil {
-		fmt.Println(err)
+		logger.GetLogger("service-log").Log("add product", "error", err.Error())
 		return nil, err
 	}
 
@@ -107,13 +110,14 @@ func (svc *ServiceImpl) AddProduct(ctx context.Context, request *web.Request) (d
 func (svc *ServiceImpl) GetProducts(ctx context.Context) (data []*domain.Domain, err error) {
 	tx, err := svc.db.Begin()
 	if err != nil {
-		fmt.Println(err)
+		logger.GetLogger("service-log").Log("get product", "error", err.Error())
 		return nil, err
 	}
 
 	defer func() {
 		if err != nil {
 			tx.Rollback()
+			logger.GetLogger("service-log").Log("get product", "error", err.Error())
 		} else {
 			tx.Commit()
 		}
@@ -121,7 +125,7 @@ func (svc *ServiceImpl) GetProducts(ctx context.Context) (data []*domain.Domain,
 
 	products, err := svc.repo.GetProducts(ctx, tx)
 	if err != nil {
-		fmt.Println(err)
+		logger.GetLogger("service-log").Log("get product", "error", err.Error())
 		return nil, err
 	}
 
@@ -131,13 +135,14 @@ func (svc *ServiceImpl) GetProducts(ctx context.Context) (data []*domain.Domain,
 func (svc *ServiceImpl) DeleteProduct(ctx context.Context, id string) error {
 	tx, err := svc.db.Begin()
 	if err != nil {
-		fmt.Println(err)
+		logger.GetLogger("service-log").Log("delete product", "error", err.Error())
 		return err
 	}
 
 	defer func() {
 		if err != nil {
 			tx.Rollback()
+			logger.GetLogger("service-log").Log("delete product", "error", err.Error())
 		} else {
 			tx.Commit()
 		}
@@ -145,7 +150,7 @@ func (svc *ServiceImpl) DeleteProduct(ctx context.Context, id string) error {
 
 	err = svc.repo.DeleteProduct(ctx, tx, id)
 	if err != nil {
-		fmt.Println(err)
+		logger.GetLogger("service-log").Log("delete product", "error", err.Error())
 		return err
 	}
 
@@ -155,6 +160,7 @@ func (svc *ServiceImpl) DeleteProduct(ctx context.Context, id string) error {
 func (svc *ServiceImpl) UpdateProduct(ctx context.Context, request *web.Request, id string) (data *domain.Domain, err error) {
 	tx, err := svc.db.Begin()
 	if err != nil {
+		logger.GetLogger("service-log").Log("update product", "error", err.Error())
 		return nil, err
 	}
 
@@ -163,13 +169,14 @@ func (svc *ServiceImpl) UpdateProduct(ctx context.Context, request *web.Request,
 	defer func() {
 		if err != nil {
 			tx.Rollback()
+			logger.GetLogger("service-log").Log("update product", "error", err.Error())
 		} else {
 			tx.Commit()
 		}
 	}()
 	data, err = svc.repo.UpdateProduct(ctx, tx, (*domain.Domain)(request), id)
 	if err != nil {
-		fmt.Println(err)
+		logger.GetLogger("service-log").Log("update product", "error", err.Error())
 		return nil, err
 	}
 

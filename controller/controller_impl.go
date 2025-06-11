@@ -3,6 +3,7 @@ package controller
 import (
 	"catering-admin-go/domain"
 	"catering-admin-go/helper"
+	"catering-admin-go/logger"
 	"catering-admin-go/service"
 	"catering-admin-go/web"
 	"strconv"
@@ -44,31 +45,38 @@ func (ctrl *ControllerImpl) AddProduct(c *fiber.Ctx) error {
 
 	price, err := strconv.Atoi(c.FormValue("price"))
 	if err != nil {
+		logger.GetLogger("controller-log").Log("controller", "error", err.Error())
 		return web.ErrorResponse(c, 400, "Invalid price", err.Error())
 	}
 	reqBody.Price = price
 
 	stock, err := strconv.Atoi(c.FormValue("stock"))
 	if err != nil {
+		logger.GetLogger("controller-log").Log("controller", "error", err.Error())
 		return web.ErrorResponse(c, 400, "Invalid stock", err.Error())
 	}
 	reqBody.Stock = stock
 
 	if err := helper.ValidateStruct(reqBody); err != nil {
+		logger.GetLogger("controller-log").Log("controller", "error", err.Error())
 		return web.ErrorResponse(c, 400, "Validation failed", err.Error())
 	}
 
 	result, err := ctrl.svc.AddProduct(c.Context(), &reqBody)
 	if err != nil {
+		logger.GetLogger("controller-log").Log("controller", "error", err.Error())
 		return web.ErrorResponse(c, 400, "Service error", err.Error())
 	}
 
+	logger.GetLogger("controller-log").Log("controller", "error", "Product added successfully")
 	return web.SuccessResponse[*domain.Domain](c, 201, "Created", result)
 }
 
 func (ctrl *ControllerImpl) GetProducts(c *fiber.Ctx) error {
+
 	products, err := ctrl.svc.GetProducts(c.Context())
 	if err != nil {
+		logger.GetLogger("controller-log").Log("Controller", "error", err.Error())
 		return web.ErrorResponse(c, 400, "Error", err.Error())
 	}
 
@@ -79,6 +87,7 @@ func (ctrl *ControllerImpl) DeleteProduct(c *fiber.Ctx) error {
 	id := c.Params("id")
 	err := ctrl.svc.DeleteProduct(c.Context(), id)
 	if err != nil {
+		logger.GetLogger("controller-log").Log("Controller", "error", err.Error())
 		return web.ErrorResponse(c, 400, "Error", err.Error())
 	}
 
@@ -96,11 +105,13 @@ func (ctrl *ControllerImpl) UpdateProduct(c *fiber.Ctx) error {
 
 	stock, err := strconv.Atoi(stockStr)
 	if err != nil {
+		logger.GetLogger("controller-log").Log("Controller", "error", err.Error())
 		return web.ErrorResponse(c, 400, "Invalid stock", err.Error())
 	}
 
 	price, err := strconv.Atoi(priceStr)
 	if err != nil {
+		logger.GetLogger("controller-log").Log("Controller", "error", err.Error())
 		return web.ErrorResponse(c, 400, "Invalid price", err.Error())
 	}
 
@@ -113,6 +124,7 @@ func (ctrl *ControllerImpl) UpdateProduct(c *fiber.Ctx) error {
 
 	response, err := ctrl.svc.UpdateProduct(c.Context(), reqBody, id)
 	if err != nil {
+		logger.GetLogger("controller-log").Log("Controller", "error", err.Error())
 		return web.ErrorResponse(c, 400, "Error", err.Error())
 	}
 
