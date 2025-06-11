@@ -10,7 +10,12 @@ import (
 
 func NewServer(handler controller.Controller) *fiber.App {
 	app := fiber.New()
-	app.Use(cors.New())
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     "http://localhost:3000",
+		AllowCredentials: true,
+		AllowHeaders:     "Origin, Content-type, Accept, Authorization",
+		AllowMethods:     "POST",
+	}))
 
 	app.Post("/v1/login", handler.Login)
 
