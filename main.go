@@ -14,7 +14,7 @@ func NewServer(handler controller.Controller) *fiber.App {
 		AllowOrigins:     "http://localhost:3000",
 		AllowCredentials: true,
 		AllowHeaders:     "Origin, Content-type, Accept, Authorization",
-		AllowMethods:     "POST",
+		AllowMethods:     "GET, POST, PUT, DELETE",
 	}))
 
 	app.Post("/v1/login", handler.Login)

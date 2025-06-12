@@ -1,17 +1,12 @@
 package service
 
 import (
-	"bytes"
 	"catering-admin-go/domain"
 	"catering-admin-go/logger"
 	"catering-admin-go/repository"
 	"catering-admin-go/web"
 	"context"
 	"database/sql"
-
-	"encoding/json"
-	"io"
-	"net/http"
 
 	"time"
 
@@ -49,28 +44,8 @@ func (svc *ServiceImpl) Login(ctx context.Context, request *domain.Admin) (*web.
 		return nil, err
 	}
 
-	byteBody, err := json.Marshal(result)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader := bytes.NewBuffer(byteBody)
-
-	byteResult, err := http.Post("http://localhost:8081/v1/auth", "application/json", bodyReader)
-	if err != nil {
-		return nil, err
-	}
-
-	byteBodyResult, err := io.ReadAll(byteResult.Body)
-	if err != nil {
-		return nil, err
-	}
-	var token web.Token
-
-	json.Unmarshal(byteBodyResult, &token)
-
 	response := &web.AdminResponse{
-		Username:    result.Username,
-		AccessToken: token.AccessToken,
+		Username: result.Username,
 	}
 
 	return response, nil
