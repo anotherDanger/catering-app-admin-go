@@ -133,3 +133,27 @@ func (repo *RepositoryImpl) UpdateProduct(ctx context.Context, tx *sql.Tx, entit
 
 	return &product, nil
 }
+
+func (repo *RepositoryImpl) GetOrders(ctx context.Context, tx *sql.Tx) ([]*domain.Orders, error) {
+	query := "select * from orders"
+	rows, err := tx.QueryContext(ctx, query)
+	if err != nil {
+		logger.GetLogger("repository-log").Log("update product", "error", err.Error())
+		return nil, err
+	}
+
+	var orders []*domain.Orders
+
+	for rows.Next() {
+		var order domain.Orders
+		err := rows.Scan(&order.Id, &order.ProductName, &order.Username, &order.Quantity, &order.Status)
+		if err != nil {
+			logger.GetLogger("repository-log").Log("update product", "error", err.Error())
+			return nil, err
+		}
+		orders = append(orders, &order)
+	}
+
+	return orders, nil
+
+}
