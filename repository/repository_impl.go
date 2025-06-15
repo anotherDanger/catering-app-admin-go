@@ -134,9 +134,9 @@ func (repo *RepositoryImpl) UpdateProduct(ctx context.Context, tx *sql.Tx, entit
 	return &product, nil
 }
 
-func (repo *RepositoryImpl) GetOrders(ctx context.Context, tx *sql.Tx) ([]*domain.Orders, error) {
+func (repo *RepositoryImpl) GetOrders(ctx context.Context, db *sql.DB) ([]*domain.Orders, error) {
 	query := "SELECT id, product_name, username, quantity, status FROM orders"
-	rows, err := tx.QueryContext(ctx, query)
+	rows, err := db.QueryContext(ctx, query)
 	if err != nil {
 		logger.GetLogger("repository-log").Log("get orders", "error", err.Error())
 		return nil, err
@@ -160,4 +160,27 @@ func (repo *RepositoryImpl) GetOrders(ctx context.Context, tx *sql.Tx) ([]*domai
 	}
 
 	return orders, nil
+}
+
+func (repo *RepositoryImpl) UpdateOrder(ctx context.Context, tx *sql.Tx, entity *domain.Orders, id string) error {
+	query := "update orders set status = ? where id = ?"
+	result, err := tx.ExecContext(ctx, query, entity.Status, id)
+	if err != nil {
+		logger.GetLogger("repository-log").Log("update orders", "error", err.Error())
+		return err
+	}
+
+	rowAff, err := result.RowsAffected()
+	if err != nil {
+		logger.GetLogger("repository-log").Log("update orders", "error", err.Error())
+		return err
+	}
+
+	if rowAff > 0 {
+		return nil
+	}
+
+	logger.GetLogger("repository-log").Log("update orders", "error", err.Error())
+	return err
+
 }

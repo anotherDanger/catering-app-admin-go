@@ -174,11 +174,35 @@ func (svc *ServiceImpl) GetOrders(ctx context.Context) (orders []*domain.Orders,
 		}
 	}()
 
-	orders, err = svc.repo.GetOrders(ctx, tx)
+	orders, err = svc.repo.GetOrders(ctx, svc.db)
 	if err != nil {
 		logger.GetLogger("service-log").Log("get orders", "error", err.Error())
 		return nil, err
 	}
 
 	return orders, nil
+}
+
+func (svc *ServiceImpl) UpdateOrder(ctx context.Context, entity *domain.Orders, id string) (err error) {
+	tx, err := svc.db.Begin()
+	if err != nil {
+		logger.GetLogger("service-log").Log("update order", "error", err.Error())
+		return err
+	}
+
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+		}
+	}()
+
+	err = svc.repo.UpdateOrder(ctx, tx, entity, id)
+	if err != nil {
+		logger.GetLogger("service-log").Log("update order", "error", err.Error())
+		return err
+	}
+
+	return nil
 }
