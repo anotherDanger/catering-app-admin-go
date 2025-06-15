@@ -28,6 +28,7 @@ func NewDb() (*sql.DB, func(), error) {
 		panic(err)
 	}
 
+	db.SetMaxIdleConns(5)
 	db.SetMaxOpenConns(10)
 
 	cleanup := func() {

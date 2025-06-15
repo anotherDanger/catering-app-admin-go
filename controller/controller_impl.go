@@ -3,10 +3,11 @@ package controller
 import (
 	"catering-admin-go/domain"
 	"catering-admin-go/helper"
-	"catering-admin-go/logger"
 	"catering-admin-go/service"
 	"catering-admin-go/web"
+	"context"
 	"strconv"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -16,157 +17,129 @@ type ControllerImpl struct {
 }
 
 func NewControllerImpl(svc service.Service) Controller {
-	return &ControllerImpl{
-		svc: svc,
-	}
+	return &ControllerImpl{svc: svc}
 }
 
 func (ctrl *ControllerImpl) Login(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(c.Context(), 10*time.Second)
+	defer cancel()
+
 	var reqBody domain.Admin
-
-	err := c.BodyParser(&reqBody)
-	if err != nil {
-		return c.Status(400).JSON(fiber.Map{
-			"message": err.Error(),
-		})
+	if err := c.BodyParser(&reqBody); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Request data is invalid."})
 	}
-
-	err = helper.ValidateStruct(reqBody)
-	if err != nil {
-		return c.Status(400).JSON(fiber.Map{
-			"message": err.Error(),
-		})
+	if err := helper.ValidateStruct(reqBody); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Please fill all required fields correctly."})
 	}
-
-	result, err := ctrl.svc.Login(c.Context(), &reqBody)
+	result, err := ctrl.svc.Login(ctx, &reqBody)
 	if err != nil {
-		return c.Status(400).JSON(fiber.Map{
-			"message": err.Error(),
-		})
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": "Incorrect username or password."})
 	}
-
-	return c.Status(200).JSON(result)
+	return c.Status(fiber.StatusOK).JSON(result)
 }
 
 func (ctrl *ControllerImpl) AddProduct(c *fiber.Ctx) error {
-	var reqBody web.Request
+	ctx, cancel := context.WithTimeout(c.Context(), 10*time.Second)
+	defer cancel()
 
+	var reqBody web.Request
 	reqBody.Name = c.FormValue("name")
 	reqBody.Description = c.FormValue("description")
-
 	price, err := strconv.Atoi(c.FormValue("price"))
 	if err != nil {
-		logger.GetLogger("controller-log").Log("controller", "error", err.Error())
-		return web.ErrorResponse(c, 400, "Invalid price", err.Error())
+		return web.ErrorResponse(c, fiber.StatusBadRequest, "Price must be a valid number.", "")
 	}
 	reqBody.Price = price
-
 	stock, err := strconv.Atoi(c.FormValue("stock"))
 	if err != nil {
-		logger.GetLogger("controller-log").Log("controller", "error", err.Error())
-		return web.ErrorResponse(c, 400, "Invalid stock", err.Error())
+		return web.ErrorResponse(c, fiber.StatusBadRequest, "Stock must be a valid number.", "")
 	}
 	reqBody.Stock = stock
-
 	if err := helper.ValidateStruct(reqBody); err != nil {
-		logger.GetLogger("controller-log").Log("controller", "error", err.Error())
-		return web.ErrorResponse(c, 400, "Validation failed", err.Error())
+		return web.ErrorResponse(c, fiber.StatusBadRequest, "Please complete all required product fields.", "")
 	}
-
-	result, err := ctrl.svc.AddProduct(c.Context(), &reqBody)
+	result, err := ctrl.svc.AddProduct(ctx, &reqBody)
 	if err != nil {
-		logger.GetLogger("controller-log").Log("controller", "error", err.Error())
-		return web.ErrorResponse(c, 400, "Service error", err.Error())
+		return web.ErrorResponse(c, fiber.StatusInternalServerError, "Unable to add product. Please try again later.", "")
 	}
-
-	logger.GetLogger("controller-log").Log("controller", "error", "Product added successfully")
-	return web.SuccessResponse[*domain.Domain](c, 201, "Created", result)
+	return web.SuccessResponse[*domain.Domain](c, fiber.StatusCreated, "Product successfully added.", result)
 }
 
 func (ctrl *ControllerImpl) GetProducts(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(c.Context(), 10*time.Second)
+	defer cancel()
 
-	products, err := ctrl.svc.GetProducts(c.Context())
+	products, err := ctrl.svc.GetProducts(ctx)
 	if err != nil {
-		logger.GetLogger("controller-log").Log("Controller", "error", err.Error())
-		return web.ErrorResponse(c, 400, "Error", err.Error())
+		return web.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to load products. Please try again later.", "")
 	}
-
-	return web.SuccessResponse[[]*domain.Domain](c, 200, "OK", products)
+	return web.SuccessResponse[[]*domain.Domain](c, fiber.StatusOK, "Products loaded successfully.", products)
 }
 
 func (ctrl *ControllerImpl) DeleteProduct(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(c.Context(), 10*time.Second)
+	defer cancel()
+
 	id := c.Params("id")
-	err := ctrl.svc.DeleteProduct(c.Context(), id)
+	err := ctrl.svc.DeleteProduct(ctx, id)
 	if err != nil {
-		logger.GetLogger("controller-log").Log("Controller", "error", err.Error())
-		return web.ErrorResponse(c, 400, "Error", err.Error())
+		return web.ErrorResponse(c, fiber.StatusInternalServerError, "Unable to delete product. Please try again later.", "")
 	}
-
-	return c.SendStatus(204)
-
+	return c.SendStatus(fiber.StatusNoContent)
 }
 
 func (ctrl *ControllerImpl) UpdateProduct(c *fiber.Ctx) error {
-	id := c.Params("id")
+	ctx, cancel := context.WithTimeout(c.Context(), 10*time.Second)
+	defer cancel()
 
+	id := c.Params("id")
 	name := c.FormValue("name")
 	description := c.FormValue("description")
 	stockStr := c.FormValue("stock")
 	priceStr := c.FormValue("price")
-
 	stock, err := strconv.Atoi(stockStr)
 	if err != nil {
-		logger.GetLogger("controller-log").Log("Controller", "error", err.Error())
-		return web.ErrorResponse(c, 400, "Invalid stock", err.Error())
+		return web.ErrorResponse(c, fiber.StatusBadRequest, "Stock must be a valid number.", "")
 	}
-
 	price, err := strconv.Atoi(priceStr)
 	if err != nil {
-		logger.GetLogger("controller-log").Log("Controller", "error", err.Error())
-		return web.ErrorResponse(c, 400, "Invalid price", err.Error())
+		return web.ErrorResponse(c, fiber.StatusBadRequest, "Price must be a valid number.", "")
 	}
-
 	reqBody := &web.Request{
 		Name:        name,
 		Description: description,
 		Stock:       stock,
 		Price:       price,
 	}
-
-	response, err := ctrl.svc.UpdateProduct(c.Context(), reqBody, id)
+	response, err := ctrl.svc.UpdateProduct(ctx, reqBody, id)
 	if err != nil {
-		logger.GetLogger("controller-log").Log("Controller", "error", err.Error())
-		return web.ErrorResponse(c, 400, "Error", err.Error())
+		return web.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to update product. Please try again later.", "")
 	}
-
-	return web.SuccessResponse(c, 200, "OK", response)
+	return web.SuccessResponse(c, fiber.StatusOK, "Product successfully updated.", response)
 }
 
 func (ctrl *ControllerImpl) GetOrders(c *fiber.Ctx) error {
-	orders, err := ctrl.svc.GetOrders(c.Context())
+	ctx, cancel := context.WithTimeout(c.Context(), 10*time.Second)
+	defer cancel()
+
+	orders, err := ctrl.svc.GetOrders(ctx)
 	if err != nil {
-
-		logger.GetLogger("controller-log").Log("Controller getOrders", "error", err.Error())
-		return web.ErrorResponse(c, 400, "Error", err.Error())
+		return web.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to load orders. Please try again later.", "")
 	}
-
-	return web.SuccessResponse[[]*domain.Orders](c, 200, "OK", orders)
+	return web.SuccessResponse[[]*domain.Orders](c, fiber.StatusOK, "Orders loaded successfully.", orders)
 }
 
 func (ctrl *ControllerImpl) UpdateOrder(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(c.Context(), 10*time.Second)
+	defer cancel()
+
 	var reqBody domain.Orders
 	id := c.Params("id")
-	err := c.BodyParser(&reqBody)
-	if err != nil {
-		logger.GetLogger("controller-log").Log("Controller update order", "error", err.Error())
-		return web.ErrorResponse(c, 400, "Error", err.Error())
+	if err := c.BodyParser(&reqBody); err != nil {
+		return web.ErrorResponse(c, fiber.StatusBadRequest, "Invalid data received.", "")
 	}
-
-	err = ctrl.svc.UpdateOrder(c.Context(), &reqBody, id)
-	if err != nil {
-		logger.GetLogger("controller-log").Log("Controller update order", "error", err.Error())
-		return web.ErrorResponse(c, 400, "Error", err.Error())
+	if err := ctrl.svc.UpdateOrder(ctx, &reqBody, id); err != nil {
+		return web.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to update order. Please try again later.", "")
 	}
-
-	return web.SuccessResponse[interface{}](c, 200, "OK", nil)
+	return web.SuccessResponse[interface{}](c, fiber.StatusOK, "Order successfully updated.", nil)
 }

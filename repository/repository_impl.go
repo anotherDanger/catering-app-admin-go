@@ -120,6 +120,7 @@ func (repo *RepositoryImpl) UpdateProduct(ctx context.Context, tx *sql.Tx, entit
 }
 
 func (repo *RepositoryImpl) GetOrders(ctx context.Context, db *sql.DB) ([]*domain.Orders, error) {
+	// db.QueryRowContext(ctx, "SELECT SLEEP(9)")
 	query := "SELECT id, product_name, username, quantity, status FROM orders"
 	rows, err := db.QueryContext(ctx, query)
 	if err != nil {
