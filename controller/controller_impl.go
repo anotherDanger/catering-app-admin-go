@@ -6,6 +6,7 @@ import (
 	"catering-admin-go/logger"
 	"catering-admin-go/service"
 	"catering-admin-go/web"
+	"fmt"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -129,4 +130,15 @@ func (ctrl *ControllerImpl) UpdateProduct(c *fiber.Ctx) error {
 	}
 
 	return web.SuccessResponse(c, 200, "OK", response)
+}
+
+func (ctrl *ControllerImpl) GetOrders(c *fiber.Ctx) error {
+	orders, err := ctrl.svc.GetOrders(c.Context())
+	if err != nil {
+		fmt.Println(err)
+		logger.GetLogger("controller-log").Log("Controller getOrders", "error", err.Error())
+		return web.ErrorResponse(c, 400, "Error", err.Error())
+	}
+
+	return web.SuccessResponse[[]*domain.Orders](c, 200, "OK", orders)
 }

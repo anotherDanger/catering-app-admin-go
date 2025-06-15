@@ -135,25 +135,29 @@ func (repo *RepositoryImpl) UpdateProduct(ctx context.Context, tx *sql.Tx, entit
 }
 
 func (repo *RepositoryImpl) GetOrders(ctx context.Context, tx *sql.Tx) ([]*domain.Orders, error) {
-	query := "select * from orders"
+	query := "SELECT id, product_name, username, quantity, status FROM orders"
 	rows, err := tx.QueryContext(ctx, query)
 	if err != nil {
-		logger.GetLogger("repository-log").Log("update product", "error", err.Error())
+		logger.GetLogger("repository-log").Log("get orders", "error", err.Error())
 		return nil, err
 	}
+	defer rows.Close()
 
 	var orders []*domain.Orders
-
 	for rows.Next() {
 		var order domain.Orders
 		err := rows.Scan(&order.Id, &order.ProductName, &order.Username, &order.Quantity, &order.Status)
 		if err != nil {
-			logger.GetLogger("repository-log").Log("update product", "error", err.Error())
+			logger.GetLogger("repository-log").Log("get orders", "error", err.Error())
 			return nil, err
 		}
 		orders = append(orders, &order)
 	}
 
-	return orders, nil
+	if err := rows.Err(); err != nil {
+		logger.GetLogger("repository-log").Log("get orders", "error", err.Error())
+		return nil, err
+	}
 
+	return orders, nil
 }
