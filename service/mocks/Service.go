@@ -64,6 +64,36 @@ func (_m *Service) DeleteProduct(ctx context.Context, id string) error {
 	return r0
 }
 
+// GetOrders provides a mock function with given fields: ctx
+func (_m *Service) GetOrders(ctx context.Context) ([]*domain.Orders, error) {
+	ret := _m.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetOrders")
+	}
+
+	var r0 []*domain.Orders
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context) ([]*domain.Orders, error)); ok {
+		return rf(ctx)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context) []*domain.Orders); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*domain.Orders)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetProducts provides a mock function with given fields: ctx
 func (_m *Service) GetProducts(ctx context.Context) ([]*domain.Domain, error) {
 	ret := _m.Called(ctx)
@@ -94,8 +124,56 @@ func (_m *Service) GetProducts(ctx context.Context) ([]*domain.Domain, error) {
 	return r0, r1
 }
 
+// Login provides a mock function with given fields: ctx, request
+func (_m *Service) Login(ctx context.Context, request *domain.Admin) (*web.AdminResponse, error) {
+	ret := _m.Called(ctx, request)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Login")
+	}
+
+	var r0 *web.AdminResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *domain.Admin) (*web.AdminResponse, error)); ok {
+		return rf(ctx, request)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *domain.Admin) *web.AdminResponse); ok {
+		r0 = rf(ctx, request)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*web.AdminResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *domain.Admin) error); ok {
+		r1 = rf(ctx, request)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// UpdateOrder provides a mock function with given fields: ctx, entity, id
+func (_m *Service) UpdateOrder(ctx context.Context, entity *domain.Orders, id string) error {
+	ret := _m.Called(ctx, entity, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateOrder")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *domain.Orders, string) error); ok {
+		r0 = rf(ctx, entity, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // UpdateProduct provides a mock function with given fields: ctx, request, id
-func (_m *Service) UpdateProduct(ctx context.Context, request *domain.Domain, id string) (*domain.Domain, error) {
+func (_m *Service) UpdateProduct(ctx context.Context, request *web.Request, id string) (*domain.Domain, error) {
 	ret := _m.Called(ctx, request, id)
 
 	if len(ret) == 0 {
@@ -104,10 +182,10 @@ func (_m *Service) UpdateProduct(ctx context.Context, request *domain.Domain, id
 
 	var r0 *domain.Domain
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *domain.Domain, string) (*domain.Domain, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *web.Request, string) (*domain.Domain, error)); ok {
 		return rf(ctx, request, id)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *domain.Domain, string) *domain.Domain); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *web.Request, string) *domain.Domain); ok {
 		r0 = rf(ctx, request, id)
 	} else {
 		if ret.Get(0) != nil {
@@ -115,7 +193,7 @@ func (_m *Service) UpdateProduct(ctx context.Context, request *domain.Domain, id
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *domain.Domain, string) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, *web.Request, string) error); ok {
 		r1 = rf(ctx, request, id)
 	} else {
 		r1 = ret.Error(1)

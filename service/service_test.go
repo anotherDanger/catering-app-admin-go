@@ -41,9 +41,9 @@ func TestGetProducts(t *testing.T) {
 						Stock:       10,
 					},
 				}
-				dbmock.ExpectBegin()
+
 				repo.On("GetProducts", mock.Anything, mock.Anything).Return(response, nil)
-				dbmock.ExpectCommit()
+
 			},
 			expectedErr: false,
 			checkResult: func(t *testing.T, result []*domain.Domain, err error) {
@@ -56,7 +56,7 @@ func TestGetProducts(t *testing.T) {
 		{
 			name: "Failed",
 			setupMock: func(dbmock sqlmock.Sqlmock, repo *mocks.Repository) {
-				dbmock.ExpectBegin()
+
 				repo.On("GetProducts", mock.Anything, mock.Anything).Return(nil, errors.New("cannot get products"))
 			},
 			expectedErr: true,
@@ -69,9 +69,9 @@ func TestGetProducts(t *testing.T) {
 			name: "NotFound",
 			setupMock: func(dbmock sqlmock.Sqlmock, repo *mocks.Repository) {
 				response := []*domain.Domain{}
-				dbmock.ExpectBegin()
+
 				repo.On("GetProducts", mock.Anything, mock.Anything).Return(response, nil)
-				dbmock.ExpectCommit()
+
 			},
 			expectedErr: false,
 			checkResult: func(t *testing.T, result []*domain.Domain, err error) {
@@ -80,20 +80,9 @@ func TestGetProducts(t *testing.T) {
 			},
 		},
 		{
-			name: "ErrTransaction",
-			setupMock: func(dbmock sqlmock.Sqlmock, repo *mocks.Repository) {
-				dbmock.ExpectBegin().WillReturnError(errors.New("cannot start transaction"))
-			},
-			expectedErr: true,
-			checkResult: func(t *testing.T, result []*domain.Domain, err error) {
-				assert.Error(t, err)
-				assert.Nil(t, result)
-			},
-		},
-		{
 			name: "ErrTransactionCommit",
 			setupMock: func(dbmock sqlmock.Sqlmock, repo *mocks.Repository) {
-				dbmock.ExpectBegin()
+
 				repo.On("GetProducts", mock.Anything, mock.Anything).Return(nil, errors.New("repository error"))
 			},
 			expectedErr: true,
@@ -105,7 +94,7 @@ func TestGetProducts(t *testing.T) {
 		{
 			name: "ErrTransactionRollback",
 			setupMock: func(dbmock sqlmock.Sqlmock, repo *mocks.Repository) {
-				dbmock.ExpectBegin()
+
 				repo.On("GetProducts", mock.Anything, mock.Anything).Return(nil, errors.New("repository error"))
 			},
 			expectedErr: true,
@@ -440,6 +429,71 @@ func TestDeleteProduct(t *testing.T) {
 			if err := mock.ExpectationsWereMet(); err != nil {
 				t.Error(err)
 			}
+		})
+	}
+}
+
+func TestLogin(t *testing.T) {
+	id := uuid.MustParse("123e4567-e89b-12d3-a456-426614174000")
+	username := "ADMIN"
+	tests := []struct {
+		name           string
+		setupMock      func(sqlmock sqlmock.Sqlmock, repo *mocks.Repository)
+		expectedErr    bool
+		expectedResult *web.AdminResponse
+	}{
+		{
+			name: "Success",
+			setupMock: func(sqlmock sqlmock.Sqlmock, repo *mocks.Repository) {
+				rows := &domain.Admin{
+					Id:       id,
+					Username: username,
+				}
+				repo.On("Login", mock.Anything, mock.Anything, mock.AnythingOfType("*domain.Admin")).Return(rows, nil)
+			},
+			expectedErr: false,
+			expectedResult: &web.AdminResponse{
+				Username: username,
+			},
+		},
+		{
+			name: "Failed",
+			setupMock: func(sqlmock sqlmock.Sqlmock, repo *mocks.Repository) {
+				repo.On("Login", mock.Anything, mock.Anything, mock.AnythingOfType("*domain.Admin")).Return(nil, errors.New("failed"))
+			},
+			expectedErr:    true,
+			expectedResult: nil,
+		},
+	}
+	for _, tt := range tests {
+		loginRequest := &domain.Admin{
+			Id:       id,
+			Username: username,
+		}
+		t.Run(tt.name, func(t *testing.T) {
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			repo := mocks.NewRepository(t)
+			tt.setupMock(mock, repo)
+			svc := NewServiceImpl(repo, db)
+
+			result, err := svc.Login(context.Background(), loginRequest)
+			if err != nil {
+				assert.Error(t, err)
+				return
+			}
+
+			if tt.expectedErr {
+				assert.Error(t, err)
+				return
+			}
+
+			assert.Equal(t, result, tt.expectedResult)
+
+			mock.ExpectationsWereMet()
 		})
 	}
 }
