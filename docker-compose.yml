@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  fiber-app:
+    image: fiber-app
+    container_name: fiber-app
+    env_file:
+      - .env
+    ports:
+      - 8080:8080
+    networks:
+      - admin-networks
+    depends_on:
+      - admin-data
+  admin-data:
+    image: mysql:latest
+    restart: always
+    container_name: admin-data
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASS}
+      MYSQL_PASSWORD: ${DB_PASS}
+    volumes:
+      - admin-data:/var/lib/mysql
+    networks:
+      - admin-networks
+networks:
+  admin-networks:
+volumes:
+  admin-data:
