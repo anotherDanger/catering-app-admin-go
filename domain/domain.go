@@ -17,9 +17,11 @@ type Domain struct {
 }
 
 type Orders struct {
-	Id          int    `json:"id"`
-	ProductName string `json:"product_name"`
-	Username    string `json:"username"`
-	Quantity    int    `json:"quantity"`
-	Status      string `json:"status"`
+	Id          uuid.UUID  `json:"id"`
+	ProductName string     `json:"product_name"`
+	Username    string     `json:"username"`
+	Quantity    int        `json:"quantity"`
+	Total       float64    `json:"total" validate:"required"`
+	Status      string     `json:"status"`
+	CreatedAt   *time.Time `json:"created_at" validate:"required"`
 }
