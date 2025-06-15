@@ -38,5 +38,11 @@ func main() {
 
 	defer cleanup()
 
+	// dbURL := "mysql://root:andhikad@tcp(localhost:3306)/dbname"
+	// migrationPath := "file//db/migrations"
+	// if err := migrate.RunMigration(dbURL, migrationPath); err != nil {
+	// 	log.Fatal(err)
+	// }
+
 	app.Listen(":8080")
 }
