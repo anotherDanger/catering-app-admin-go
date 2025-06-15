@@ -27,14 +27,8 @@ func NewServiceImpl(repo repository.Repository, db *sql.DB) Service {
 }
 
 func (svc *ServiceImpl) Login(ctx context.Context, request *domain.Admin) (*web.AdminResponse, error) {
-	tx, err := svc.db.Begin()
-	if err != nil {
-		return nil, err
-	}
 
-	defer helper.WithTransaction(tx, &err)
-
-	result, err := svc.repo.Login(ctx, tx, request)
+	result, err := svc.repo.Login(ctx, svc.db, request)
 	if err != nil {
 		return nil, err
 	}
