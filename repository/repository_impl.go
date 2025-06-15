@@ -14,9 +14,9 @@ func NewRepositoryImpl() Repository {
 	return &RepositoryImpl{}
 }
 
-func (repo *RepositoryImpl) Login(ctx context.Context, tx *sql.Tx, entity *domain.Admin) (*domain.Admin, error) {
+func (repo *RepositoryImpl) Login(ctx context.Context, db *sql.DB, entity *domain.Admin) (*domain.Admin, error) {
 	query := "SELECT id, username, password FROM admin WHERE username = ?"
-	row := tx.QueryRowContext(ctx, query, entity.Username)
+	row := db.QueryRowContext(ctx, query, entity.Username)
 
 	var response domain.Admin
 	err := row.Scan(&response.Id, &response.Username, &response.Password)

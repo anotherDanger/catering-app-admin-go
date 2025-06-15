@@ -64,29 +64,29 @@ func (_m *Repository) DeleteProduct(ctx context.Context, tx *sql.Tx, id string) 
 	return r0
 }
 
-// GetProducts provides a mock function with given fields: ctx, tx
-func (_m *Repository) GetProducts(ctx context.Context, tx *sql.Tx) ([]*domain.Domain, error) {
-	ret := _m.Called(ctx, tx)
+// GetOrders provides a mock function with given fields: ctx, db
+func (_m *Repository) GetOrders(ctx context.Context, db *sql.DB) ([]*domain.Orders, error) {
+	ret := _m.Called(ctx, db)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetProducts")
+		panic("no return value specified for GetOrders")
 	}
 
-	var r0 []*domain.Domain
+	var r0 []*domain.Orders
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *sql.Tx) ([]*domain.Domain, error)); ok {
-		return rf(ctx, tx)
+	if rf, ok := ret.Get(0).(func(context.Context, *sql.DB) ([]*domain.Orders, error)); ok {
+		return rf(ctx, db)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *sql.Tx) []*domain.Domain); ok {
-		r0 = rf(ctx, tx)
+	if rf, ok := ret.Get(0).(func(context.Context, *sql.DB) []*domain.Orders); ok {
+		r0 = rf(ctx, db)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*domain.Domain)
+			r0 = ret.Get(0).([]*domain.Orders)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *sql.Tx) error); ok {
-		r1 = rf(ctx, tx)
+	if rf, ok := ret.Get(1).(func(context.Context, *sql.DB) error); ok {
+		r1 = rf(ctx, db)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -94,9 +94,39 @@ func (_m *Repository) GetProducts(ctx context.Context, tx *sql.Tx) ([]*domain.Do
 	return r0, r1
 }
 
-// Login provides a mock function with given fields: ctx, tx, entity
-func (_m *Repository) Login(ctx context.Context, tx *sql.Tx, entity *domain.Admin) (*domain.Admin, error) {
-	ret := _m.Called(ctx, tx, entity)
+// GetProducts provides a mock function with given fields: ctx, db
+func (_m *Repository) GetProducts(ctx context.Context, db *sql.DB) ([]*domain.Domain, error) {
+	ret := _m.Called(ctx, db)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetProducts")
+	}
+
+	var r0 []*domain.Domain
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *sql.DB) ([]*domain.Domain, error)); ok {
+		return rf(ctx, db)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *sql.DB) []*domain.Domain); ok {
+		r0 = rf(ctx, db)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*domain.Domain)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *sql.DB) error); ok {
+		r1 = rf(ctx, db)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Login provides a mock function with given fields: ctx, db, entity
+func (_m *Repository) Login(ctx context.Context, db *sql.DB, entity *domain.Admin) (*domain.Admin, error) {
+	ret := _m.Called(ctx, db, entity)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Login")
@@ -104,24 +134,42 @@ func (_m *Repository) Login(ctx context.Context, tx *sql.Tx, entity *domain.Admi
 
 	var r0 *domain.Admin
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *sql.Tx, *domain.Admin) (*domain.Admin, error)); ok {
-		return rf(ctx, tx, entity)
+	if rf, ok := ret.Get(0).(func(context.Context, *sql.DB, *domain.Admin) (*domain.Admin, error)); ok {
+		return rf(ctx, db, entity)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *sql.Tx, *domain.Admin) *domain.Admin); ok {
-		r0 = rf(ctx, tx, entity)
+	if rf, ok := ret.Get(0).(func(context.Context, *sql.DB, *domain.Admin) *domain.Admin); ok {
+		r0 = rf(ctx, db, entity)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*domain.Admin)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *sql.Tx, *domain.Admin) error); ok {
-		r1 = rf(ctx, tx, entity)
+	if rf, ok := ret.Get(1).(func(context.Context, *sql.DB, *domain.Admin) error); ok {
+		r1 = rf(ctx, db, entity)
 	} else {
 		r1 = ret.Error(1)
 	}
 
 	return r0, r1
+}
+
+// UpdateOrder provides a mock function with given fields: ctx, tx, entity, id
+func (_m *Repository) UpdateOrder(ctx context.Context, tx *sql.Tx, entity *domain.Orders, id string) error {
+	ret := _m.Called(ctx, tx, entity, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateOrder")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *sql.Tx, *domain.Orders, string) error); ok {
+		r0 = rf(ctx, tx, entity, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 // UpdateProduct provides a mock function with given fields: ctx, tx, entity, id
