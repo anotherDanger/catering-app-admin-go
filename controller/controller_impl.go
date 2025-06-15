@@ -24,8 +24,19 @@ func NewControllerImpl(svc service.Service) Controller {
 func (ctrl *ControllerImpl) Login(c *fiber.Ctx) error {
 	var reqBody domain.Admin
 
-	reqBody.Username = c.FormValue("username")
-	reqBody.Password = c.FormValue("password")
+	err := c.BodyParser(&reqBody)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	err = helper.ValidateStruct(reqBody)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
 
 	result, err := ctrl.svc.Login(c.Context(), &reqBody)
 	if err != nil {
