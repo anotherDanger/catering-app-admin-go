@@ -15,18 +15,20 @@ func NewRepositoryImpl() Repository {
 }
 
 func (repo *RepositoryImpl) Login(ctx context.Context, tx *sql.Tx, entity *domain.Admin) (*domain.Admin, error) {
-	query := "select id, username, password from admin where username = ?"
-	result := tx.QueryRowContext(ctx, query, entity.Username)
+	query := "SELECT id, username, password FROM admin WHERE username = ?"
+	row := tx.QueryRowContext(ctx, query, entity.Username)
 
 	var response domain.Admin
-	result.Scan(&response.Id, &response.Username, &response.Password)
+	err := row.Scan(&response.Id, &response.Username, &response.Password)
+	if err != nil {
+		return nil, err
+	}
 
 	return &response, nil
-
 }
 
 func (repo *RepositoryImpl) AddProduct(ctx context.Context, tx *sql.Tx, entity *domain.Domain) (*domain.Domain, error) {
-	query := "insert into products(id, name, description, stock, price, created_at) values(?, ?, ?, ?, ?, ?)"
+	query := "INSERT INTO products(id, name, description, stock, price, created_at) VALUES(?, ?, ?, ?, ?, ?)"
 	result, err := tx.ExecContext(ctx, query, entity.Id, entity.Name, entity.Description, entity.Stock, entity.Price, entity.CreatedAt)
 	if err != nil {
 		logger.GetLogger("repository-log").Log("add product", "error", err.Error())
@@ -34,42 +36,28 @@ func (repo *RepositoryImpl) AddProduct(ctx context.Context, tx *sql.Tx, entity *
 	}
 
 	rowAff, err := result.RowsAffected()
-	if err != nil {
+	if err != nil || rowAff == 0 {
 		logger.GetLogger("repository-log").Log("add product", "error", err.Error())
 		return nil, err
 	}
 
-	if rowAff == 0 {
-		logger.GetLogger("repository-log").Log("add product", "error", err.Error())
-		return nil, err
-	}
-
-	response := &domain.Domain{
-		Id:          entity.Id,
-		Name:        entity.Name,
-		Description: entity.Description,
-		Stock:       entity.Stock,
-		Price:       entity.Price,
-		CreatedAt:   entity.CreatedAt,
-	}
-
-	return response, nil
-
+	return entity, nil
 }
 
 func (repo *RepositoryImpl) GetProducts(ctx context.Context, tx *sql.Tx) ([]*domain.Domain, error) {
-	query := "select * from products"
+	query := "SELECT id, name, description, stock, price, created_at, modified_at FROM products"
 	rows, err := tx.QueryContext(ctx, query)
 	if err != nil {
 		logger.GetLogger("repository-log").Log("get product", "error", err.Error())
 		return nil, err
 	}
+	defer rows.Close()
 
 	var products []*domain.Domain
-	defer rows.Close()
 	for rows.Next() {
 		var product domain.Domain
 		var description sql.NullString
+
 		err := rows.Scan(&product.Id, &product.Name, &description, &product.Stock, &product.Price, &product.CreatedAt, &product.ModifiedAt)
 		if err != nil {
 			logger.GetLogger("repository-log").Log("get product", "error", err.Error())
@@ -87,7 +75,7 @@ func (repo *RepositoryImpl) GetProducts(ctx context.Context, tx *sql.Tx) ([]*dom
 }
 
 func (repo *RepositoryImpl) DeleteProduct(ctx context.Context, tx *sql.Tx, id string) error {
-	query := "delete from products where id = ?"
+	query := "DELETE FROM products WHERE id = ?"
 	result, err := tx.ExecContext(ctx, query, id)
 	if err != nil {
 		logger.GetLogger("repository-log").Log("delete product", "error", err.Error())
@@ -95,7 +83,7 @@ func (repo *RepositoryImpl) DeleteProduct(ctx context.Context, tx *sql.Tx, id st
 	}
 
 	rowAff, err := result.RowsAffected()
-	if rowAff == 0 || err != nil {
+	if err != nil || rowAff == 0 {
 		logger.GetLogger("repository-log").Log("delete product", "error", err.Error())
 		return err
 	}
@@ -104,8 +92,7 @@ func (repo *RepositoryImpl) DeleteProduct(ctx context.Context, tx *sql.Tx, id st
 }
 
 func (repo *RepositoryImpl) UpdateProduct(ctx context.Context, tx *sql.Tx, entity *domain.Domain, id string) (*domain.Domain, error) {
-	query := "update products set name = ?, description = ?, stock = ?, price = ?, modified_at = ? where id = ?"
-
+	query := "UPDATE products SET name = ?, description = ?, stock = ?, price = ?, modified_at = ? WHERE id = ?"
 	result, err := tx.ExecContext(ctx, query, entity.Name, entity.Description, entity.Stock, entity.Price, entity.ModifiedAt, id)
 	if err != nil {
 		logger.GetLogger("repository-log").Log("update product", "error", err.Error())
@@ -117,14 +104,12 @@ func (repo *RepositoryImpl) UpdateProduct(ctx context.Context, tx *sql.Tx, entit
 		logger.GetLogger("repository-log").Log("update product", "error", err.Error())
 		return nil, err
 	}
-
 	if rowAff == 0 {
 		return nil, errors.New("no rows updated")
 	}
 
 	var product domain.Domain
-
-	row := tx.QueryRowContext(ctx, "select id, name, description, stock, price, created_at, modified_at from products where id = ?", id)
+	row := tx.QueryRowContext(ctx, "SELECT id, name, description, stock, price, created_at, modified_at FROM products WHERE id = ?", id)
 	err = row.Scan(&product.Id, &product.Name, &product.Description, &product.Stock, &product.Price, &product.CreatedAt, &product.ModifiedAt)
 	if err != nil {
 		logger.GetLogger("repository-log").Log("update product", "error", err.Error())
@@ -163,7 +148,7 @@ func (repo *RepositoryImpl) GetOrders(ctx context.Context, db *sql.DB) ([]*domai
 }
 
 func (repo *RepositoryImpl) UpdateOrder(ctx context.Context, tx *sql.Tx, entity *domain.Orders, id string) error {
-	query := "update orders set status = ? where id = ?"
+	query := "UPDATE orders SET status = ? WHERE id = ?"
 	result, err := tx.ExecContext(ctx, query, entity.Status, id)
 	if err != nil {
 		logger.GetLogger("repository-log").Log("update orders", "error", err.Error())
@@ -171,16 +156,10 @@ func (repo *RepositoryImpl) UpdateOrder(ctx context.Context, tx *sql.Tx, entity 
 	}
 
 	rowAff, err := result.RowsAffected()
-	if err != nil {
+	if err != nil || rowAff == 0 {
 		logger.GetLogger("repository-log").Log("update orders", "error", err.Error())
 		return err
 	}
 
-	if rowAff > 0 {
-		return nil
-	}
-
-	logger.GetLogger("repository-log").Log("update orders", "error", err.Error())
-	return err
-
+	return nil
 }
