@@ -2,6 +2,7 @@ package service
 
 import (
 	"catering-admin-go/domain"
+	"catering-admin-go/helper"
 	"catering-admin-go/logger"
 	"catering-admin-go/repository"
 	"catering-admin-go/web"
@@ -31,13 +32,7 @@ func (svc *ServiceImpl) Login(ctx context.Context, request *domain.Admin) (*web.
 		return nil, err
 	}
 
-	defer func() {
-		if err != nil {
-			tx.Rollback()
-		} else {
-			tx.Commit()
-		}
-	}()
+	defer helper.WithTransaction(tx, &err)
 
 	result, err := svc.repo.Login(ctx, tx, request)
 	if err != nil {
@@ -63,14 +58,7 @@ func (svc *ServiceImpl) AddProduct(ctx context.Context, request *web.Request) (d
 
 	request.Id = id
 	request.CreatedAt = &date
-	defer func() {
-		if err != nil {
-			tx.Rollback()
-			logger.GetLogger("service-log").Log("add product", "error", err.Error())
-		} else {
-			tx.Commit()
-		}
-	}()
+	defer helper.WithTransaction(tx, &err)
 
 	data, err = svc.repo.AddProduct(ctx, tx, (*domain.Domain)(request))
 	if err != nil {
@@ -83,22 +71,8 @@ func (svc *ServiceImpl) AddProduct(ctx context.Context, request *web.Request) (d
 }
 
 func (svc *ServiceImpl) GetProducts(ctx context.Context) (data []*domain.Domain, err error) {
-	tx, err := svc.db.Begin()
-	if err != nil {
-		logger.GetLogger("service-log").Log("get product", "error", err.Error())
-		return nil, err
-	}
 
-	defer func() {
-		if err != nil {
-			tx.Rollback()
-			logger.GetLogger("service-log").Log("get product", "error", err.Error())
-		} else {
-			tx.Commit()
-		}
-	}()
-
-	products, err := svc.repo.GetProducts(ctx, tx)
+	products, err := svc.repo.GetProducts(ctx, svc.db)
 	if err != nil {
 		logger.GetLogger("service-log").Log("get product", "error", err.Error())
 		return nil, err
@@ -114,14 +88,7 @@ func (svc *ServiceImpl) DeleteProduct(ctx context.Context, id string) error {
 		return err
 	}
 
-	defer func() {
-		if err != nil {
-			tx.Rollback()
-			logger.GetLogger("service-log").Log("delete product", "error", err.Error())
-		} else {
-			tx.Commit()
-		}
-	}()
+	defer helper.WithTransaction(tx, &err)
 
 	err = svc.repo.DeleteProduct(ctx, tx, id)
 	if err != nil {
@@ -141,14 +108,7 @@ func (svc *ServiceImpl) UpdateProduct(ctx context.Context, request *web.Request,
 
 	date := time.Now()
 	request.ModifiedAt = &date
-	defer func() {
-		if err != nil {
-			tx.Rollback()
-			logger.GetLogger("service-log").Log("update product", "error", err.Error())
-		} else {
-			tx.Commit()
-		}
-	}()
+	defer helper.WithTransaction(tx, &err)
 	data, err = svc.repo.UpdateProduct(ctx, tx, (*domain.Domain)(request), id)
 	if err != nil {
 		logger.GetLogger("service-log").Log("update product", "error", err.Error())
@@ -159,20 +119,6 @@ func (svc *ServiceImpl) UpdateProduct(ctx context.Context, request *web.Request,
 }
 
 func (svc *ServiceImpl) GetOrders(ctx context.Context) (orders []*domain.Orders, err error) {
-	tx, err := svc.db.Begin()
-	if err != nil {
-		logger.GetLogger("service-log").Log("get orders", "error", err.Error())
-		return nil, err
-	}
-
-	defer func() {
-		if err != nil {
-			tx.Rollback()
-			logger.GetLogger("service-log").Log("get orders", "error", err.Error())
-		} else {
-			tx.Commit()
-		}
-	}()
 
 	orders, err = svc.repo.GetOrders(ctx, svc.db)
 	if err != nil {
@@ -190,13 +136,7 @@ func (svc *ServiceImpl) UpdateOrder(ctx context.Context, entity *domain.Orders, 
 		return err
 	}
 
-	defer func() {
-		if err != nil {
-			tx.Rollback()
-		} else {
-			tx.Commit()
-		}
-	}()
+	defer helper.WithTransaction(tx, &err)
 
 	err = svc.repo.UpdateOrder(ctx, tx, entity, id)
 	if err != nil {

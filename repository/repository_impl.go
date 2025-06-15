@@ -44,9 +44,9 @@ func (repo *RepositoryImpl) AddProduct(ctx context.Context, tx *sql.Tx, entity *
 	return entity, nil
 }
 
-func (repo *RepositoryImpl) GetProducts(ctx context.Context, tx *sql.Tx) ([]*domain.Domain, error) {
+func (repo *RepositoryImpl) GetProducts(ctx context.Context, db *sql.DB) ([]*domain.Domain, error) {
 	query := "SELECT id, name, description, stock, price, created_at, modified_at FROM products"
-	rows, err := tx.QueryContext(ctx, query)
+	rows, err := db.QueryContext(ctx, query)
 	if err != nil {
 		logger.GetLogger("repository-log").Log("get product", "error", err.Error())
 		return nil, err
