@@ -10,4 +10,5 @@ type Controller interface {
 	UpdateProduct(c *fiber.Ctx) error
 	GetOrders(c *fiber.Ctx) error
 	UpdateOrder(c *fiber.Ctx) error
+	DeleteOrder(c *fiber.Ctx) error
 }

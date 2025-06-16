@@ -141,3 +141,14 @@ func (ctrl *ControllerImpl) UpdateOrder(c *fiber.Ctx) error {
 	}
 	return web.SuccessResponse[interface{}](c, fiber.StatusOK, "Order successfully updated.", nil)
 }
+
+func (ctrl *ControllerImpl) DeleteOrder(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(c.Context(), 10*time.Second)
+	defer cancel()
+
+	id := c.Params("id")
+	if err := ctrl.svc.DeleteOrder(ctx, id); err != nil {
+		return web.ErrorResponse(c, fiber.StatusBadRequest, "Failed to delete order", "")
+	}
+	return web.SuccessResponse[interface{}](c, fiber.StatusNoContent, "Order successfully deleted", nil)
+}

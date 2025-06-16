@@ -76,3 +76,38 @@ func TestLogin(t *testing.T) {
 		})
 	}
 }
+
+func TestDeleteOrder(t *testing.T) {
+	id := "1"
+	tests := []struct {
+		name        string
+		setupMock   func(svc *mocks.Service)
+		expectedErr bool
+	}{
+		{
+			name: "Success",
+			setupMock: func(svc *mocks.Service) {
+				svc.On("DeleteOrder", mock.Anything, mock.Anything).Return(nil)
+			},
+			expectedErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			app := fiber.New()
+			svc := mocks.NewService(t)
+			tt.setupMock(svc)
+			ctrl := NewControllerImpl(svc)
+
+			app.Delete("/api/v1/orders/:id", ctrl.DeleteOrder)
+			req := httptest.NewRequest(fiber.MethodDelete, "/api/v1/orders/"+id, nil)
+			resp, err := app.Test(req, -1)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			assert.Equal(t, fiber.StatusNoContent, resp.StatusCode)
+		})
+	}
+}
