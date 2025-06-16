@@ -136,3 +136,21 @@ func (svc *ServiceImpl) UpdateOrder(ctx context.Context, entity *domain.Orders, 
 
 	return nil
 }
+
+func (svc *ServiceImpl) DeleteOrder(ctx context.Context, id string) error {
+	tx, err := svc.db.Begin()
+	if err != nil {
+		logger.GetLogger("service-log").Log("delete order", "error", err.Error())
+		return err
+	}
+
+	defer helper.WithTransaction(tx, &err)
+
+	err = svc.repo.DeleteOrder(ctx, tx, id)
+	if err != nil {
+		logger.GetLogger("service-log").Log("delete order", "error", err.Error())
+		return err
+	}
+
+	return nil
+}
