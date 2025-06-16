@@ -164,3 +164,20 @@ func (repo *RepositoryImpl) UpdateOrder(ctx context.Context, tx *sql.Tx, entity 
 
 	return nil
 }
+
+func (repo *RepositoryImpl) DeleteOrder(ctx context.Context, tx *sql.Tx, id string) error {
+	query := "DELETE FROM orders WHERE id = ?"
+	result, err := tx.ExecContext(ctx, query, id)
+	if err != nil {
+		logger.GetLogger("repository-log").Log("delete order", "error", err.Error())
+		return err
+	}
+
+	rowAff, err := result.RowsAffected()
+	if err != nil || rowAff == 0 {
+		logger.GetLogger("repository-log").Log("update orders", "errors", err.Error())
+		return err
+	}
+
+	return nil
+}

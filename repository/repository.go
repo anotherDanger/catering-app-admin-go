@@ -14,4 +14,5 @@ type Repository interface {
 	UpdateProduct(ctx context.Context, tx *sql.Tx, entity *domain.Domain, id string) (*domain.Domain, error)
 	GetOrders(ctx context.Context, db *sql.DB) ([]*domain.Orders, error)
 	UpdateOrder(ctx context.Context, tx *sql.Tx, entity *domain.Orders, id string) error
+	DeleteOrder(ctx context.Context, tx *sql.Tx, id string) error
 }
