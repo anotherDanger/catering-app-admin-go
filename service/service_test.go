@@ -27,14 +27,14 @@ func TestGetProducts(t *testing.T) {
 			setupMock: func(dbmock sqlmock.Sqlmock, repo *mocks.Repository) {
 				response := []*domain.Domain{
 					{
-						Id:          uuid.New(),
+						Id:          "P001",
 						Name:        "Product 1",
 						Description: "1st Product",
 						Price:       100,
 						Stock:       10,
 					},
 					{
-						Id:          uuid.New(),
+						Id:          "P001",
 						Name:        "Product 2",
 						Description: "2nd Product",
 						Price:       100,
@@ -144,7 +144,7 @@ func TestAddProduct(t *testing.T) {
 			name: "Success",
 			mockSetup: func(dbmock sqlmock.Sqlmock, repo *mocks.Repository) {
 				response := &domain.Domain{
-					Id:          uuid.New(),
+					Id:          "P001",
 					Name:        "Product 1",
 					Description: "1st Product",
 					Price:       100,
@@ -204,7 +204,7 @@ func TestAddProduct(t *testing.T) {
 
 			svc := NewServiceImpl(repo, db)
 			result, err := svc.AddProduct(context.Background(), &web.Request{
-				Id:          uuid.New(),
+				Id:          "P001",
 				Name:        "Product 1",
 				Description: "1st Product",
 				Price:       100,
