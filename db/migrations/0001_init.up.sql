@@ -1,6 +1,3 @@
-create database catering;
-use catering;
-
 create table products(
     id char(36),
     name varchar(100),

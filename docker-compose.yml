@@ -17,12 +17,31 @@ services:
     restart: always
     container_name: admin-data
     environment:
+      MYSQL_DATABASE: catering
       MYSQL_ROOT_PASSWORD: ${DB_PASS}
       MYSQL_PASSWORD: ${DB_PASS}
     volumes:
       - admin-data:/var/lib/mysql
     networks:
       - admin-networks
+  migrate:
+    image: migrate/migrate
+    container_name: migrate
+    env_file:
+      - .env
+    volumes:
+      - /home/andhikadanger/Documents/khaira-catering/catering-admin-go/db/migrations:/migrations
+    command: [
+      "-path", "/migrations",
+      "-database", "mysql://root:${DB_PASS}@tcp(admin-data:${DB_PORT})/${DB_NAME}",
+      "up"
+    ]
+    depends_on:
+      - admin-data
+    networks:
+      - admin-networks
+
+
 networks:
   admin-networks:
 volumes:
