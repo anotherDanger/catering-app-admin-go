@@ -18,11 +18,13 @@ func NewServer(handler controller.Controller) *fiber.App {
 	}))
 
 	app.Post("/v1/login", handler.Login)
-	app.Get("/v1/orders", handler.GetOrders)
-	app.Put("/v1/orders/:id", handler.UpdateOrder)
-	app.Delete("/v1/orders/:id", handler.DeleteProduct)
+
 	protectedRoute := app.Group("/api")
 	protectedRoute.Use(middleware.MyMiddleware)
+	protectedRoute.Get("/v1/orders", handler.GetOrders)
+	protectedRoute.Put("/v1/orders/:id", handler.UpdateOrder)
+	protectedRoute.Delete("/v1/orders/:id", handler.DeleteProduct)
+
 	protectedRoute.Post("/v1/products", handler.AddProduct)
 	protectedRoute.Get("/v1/products", handler.GetProducts)
 	protectedRoute.Delete("/v1/products/:id", handler.DeleteProduct)
