@@ -46,6 +46,24 @@ func (_m *Repository) AddProduct(ctx context.Context, tx *sql.Tx, entity *domain
 	return r0, r1
 }
 
+// DeleteOrder provides a mock function with given fields: ctx, tx, id
+func (_m *Repository) DeleteOrder(ctx context.Context, tx *sql.Tx, id string) error {
+	ret := _m.Called(ctx, tx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteOrder")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *sql.Tx, string) error); ok {
+		r0 = rf(ctx, tx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // DeleteProduct provides a mock function with given fields: ctx, tx, id
 func (_m *Repository) DeleteProduct(ctx context.Context, tx *sql.Tx, id string) error {
 	ret := _m.Called(ctx, tx, id)

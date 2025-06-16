@@ -610,3 +610,42 @@ func TestUpdateOrder(t *testing.T) {
 		})
 	}
 }
+
+func TestDeleteOrder(t *testing.T) {
+	id := "1"
+	tests := []struct {
+		name        string
+		setupMock   func(sqlmock sqlmock.Sqlmock)
+		expectedErr bool
+	}{
+		{
+			name: "Success",
+			setupMock: func(mock sqlmock.Sqlmock) {
+				mock.ExpectBegin()
+				mock.ExpectExec("DELETE FROM orders WHERE id = \\?").
+					WithArgs(id).
+					WillReturnResult(sqlmock.NewResult(0, 1))
+			},
+			expectedErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db, sqlmock, err := sqlmock.New()
+			if err != nil {
+				t.Fatal(err)
+				return
+			}
+			repo := NewRepositoryImpl()
+			tt.setupMock(sqlmock)
+			tx, err := db.Begin()
+			if err != nil {
+				t.Fatal(err)
+				return
+			}
+
+			err = repo.DeleteOrder(context.Background(), tx, id)
+			assert.Nil(t, err)
+		})
+	}
+}
