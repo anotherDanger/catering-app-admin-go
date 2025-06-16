@@ -135,9 +135,7 @@ func (ctrl *ControllerImpl) UpdateOrder(c *fiber.Ctx) error {
 
 	var reqBody domain.Orders
 	id := c.Params("id")
-	if err := c.BodyParser(&reqBody); err != nil {
-		return web.ErrorResponse(c, fiber.StatusBadRequest, "Invalid data received.", "")
-	}
+
 	if err := ctrl.svc.UpdateOrder(ctx, &reqBody, id); err != nil {
 		return web.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to update order. Please try again later.", "")
 	}

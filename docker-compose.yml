@@ -11,12 +11,14 @@ services:
     networks:
       - admin-networks
     depends_on:
-      - admin-data
+      admin-data:
+        condition: service_healthy
     deploy:
       resources:
         limits:
-          cpus: '0.5'
-          memory: 512M
+          cpus: '1.0'
+          memory: 1G
+
   admin-data:
     image: mysql:latest
     restart: always
@@ -29,11 +31,12 @@ services:
       - admin-data:/var/lib/mysql
     networks:
       - admin-networks
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 1G
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASS}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   migrate:
     image: migrate/migrate
     container_name: migrate
@@ -47,12 +50,13 @@ services:
       "up"
     ]
     depends_on:
-      - admin-data
+      admin-data:
+        condition: service_healthy
     networks:
       - admin-networks
 
-
 networks:
   admin-networks:
+
 volumes:
   admin-data:

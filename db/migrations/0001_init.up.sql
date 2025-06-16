@@ -29,6 +29,7 @@ CREATE TABLE orders (
     total DOUBLE NOT NULL,
     status VARCHAR(20) DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (product_id) REFERENCES products(id),
     FOREIGN KEY (username) REFERENCES users(username)
 );
@@ -47,4 +48,4 @@ INSERT INTO admin (id, username, password) VALUES
 ('e7b8a9d4-3f5a-4c82-b7e2-2c3f49b0e9c1', 'admin', 'hashed_admin_password');
 
 INSERT INTO orders (id, product_id, product_name, username, quantity, total, status) VALUES
-('user1_20250616120000', 'PRD001', 'Produk A', 'user1', 2, 200000, 'pending');
+('11c4a458-75c1-4a34-a1e6-23b9d2d2e14e', 'PRD001', 'Produk A', 'user1', 2, 200000, 'pending');
