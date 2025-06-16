@@ -646,6 +646,7 @@ func TestDeleteOrder(t *testing.T) {
 
 			err = repo.DeleteOrder(context.Background(), tx, id)
 			assert.Nil(t, err)
+			sqlmock.ExpectationsWereMet()
 		})
 	}
 }
