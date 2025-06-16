@@ -10,8 +10,6 @@ import (
 	"database/sql"
 
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type ServiceImpl struct {
@@ -47,10 +45,8 @@ func (svc *ServiceImpl) AddProduct(ctx context.Context, request *web.Request) (d
 		return nil, err
 	}
 
-	id := uuid.New()
 	date := time.Now()
 
-	request.Id = id
 	request.CreatedAt = &date
 	defer helper.WithTransaction(tx, &err)
 

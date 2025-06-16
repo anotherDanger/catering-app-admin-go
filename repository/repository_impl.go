@@ -121,7 +121,7 @@ func (repo *RepositoryImpl) UpdateProduct(ctx context.Context, tx *sql.Tx, entit
 
 func (repo *RepositoryImpl) GetOrders(ctx context.Context, db *sql.DB) ([]*domain.Orders, error) {
 	// db.QueryRowContext(ctx, "SELECT SLEEP(9)")
-	query := "SELECT id, product_name, username, quantity, total, status, created_at FROM orders"
+	query := "SELECT * FROM orders"
 	rows, err := db.QueryContext(ctx, query)
 	if err != nil {
 		logger.GetLogger("repository-log").Log("get orders", "error", err.Error())
@@ -132,7 +132,7 @@ func (repo *RepositoryImpl) GetOrders(ctx context.Context, db *sql.DB) ([]*domai
 	var orders []*domain.Orders
 	for rows.Next() {
 		var order domain.Orders
-		err := rows.Scan(&order.Id, &order.ProductName, &order.Username, &order.Quantity, &order.Total, &order.Status, &order.CreatedAt)
+		err := rows.Scan(&order.Id, &order.ProductId, &order.ProductName, &order.Username, &order.Quantity, &order.Total, &order.Status, &order.CreatedAt, &order.ModifiedAt)
 		if err != nil {
 			logger.GetLogger("repository-log").Log("get orders", "error", err.Error())
 			return nil, err

@@ -12,6 +12,11 @@ services:
       - admin-networks
     depends_on:
       - admin-data
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
   admin-data:
     image: mysql:latest
     restart: always
@@ -24,6 +29,11 @@ services:
       - admin-data:/var/lib/mysql
     networks:
       - admin-networks
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
   migrate:
     image: migrate/migrate
     container_name: migrate
