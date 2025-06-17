@@ -13,6 +13,7 @@ services:
     depends_on:
       admin-data:
         condition: service_healthy
+    restart: on-failure
     deploy:
       resources:
         limits:

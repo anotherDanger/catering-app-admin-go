@@ -39,11 +39,6 @@ func MyMiddleware(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid claims"})
 	}
 
-	id, ok := claims["id"].(string)
-	if !ok {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid claims id"})
-	}
-
 	username, ok := claims["username"].(string)
 	if !ok {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid claims username"})
@@ -60,7 +55,6 @@ func MyMiddleware(c *fiber.Ctx) error {
 	}
 
 	c.Locals("token", tokenString)
-	c.Locals("userID", id)
 	c.Locals("username", username)
 
 	return c.Next()

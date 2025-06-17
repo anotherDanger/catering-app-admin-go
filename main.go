@@ -23,7 +23,7 @@ func NewServer(handler controller.Controller) *fiber.App {
 	protectedRoute.Use(middleware.MyMiddleware)
 	protectedRoute.Get("/v1/orders", handler.GetOrders)
 	protectedRoute.Put("/v1/orders/:id", handler.UpdateOrder)
-	protectedRoute.Delete("/v1/orders/:id", handler.DeleteProduct)
+	protectedRoute.Delete("/v1/orders/:id", handler.DeleteOrder)
 
 	protectedRoute.Post("/v1/products", handler.AddProduct)
 	protectedRoute.Get("/v1/products", handler.GetProducts)

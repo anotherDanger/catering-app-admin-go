@@ -134,6 +134,10 @@ func (ctrl *ControllerImpl) UpdateOrder(c *fiber.Ctx) error {
 	defer cancel()
 
 	var reqBody domain.Orders
+	err := c.BodyParser(&reqBody)
+	if err != nil {
+		return web.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to update order. Please try again later.", "")
+	}
 	id := c.Params("id")
 
 	if err := ctrl.svc.UpdateOrder(ctx, &reqBody, id); err != nil {
